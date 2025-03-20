@@ -4,12 +4,11 @@ import "./App.css";
 function App() {
   const WINDOW_SIZE = 10;
 
-  // Local storage for numbers using qualified IDs as keys
   const [numberStore, setNumberStore] = useState({
-    p: [], // prime
-    f: [], // fibonacci
-    e: [], // even
-    r: [], // random
+    p: [], 
+    f: [], 
+    e: [], 
+    r: [], 
   });
 
   const [selectedType, setSelectedType] = useState("p");
@@ -18,7 +17,6 @@ function App() {
   const [customId, setCustomId] = useState("");
   const [error, setError] = useState("");
 
-  // Dummy data generators
   const dummyDataGenerators = {
     p: () =>
       [2, 3, 5, 7, 11, 13, 17, 19, 23, 29].slice(
@@ -42,19 +40,15 @@ function App() {
   };
 
   const fetchDummyNumbers = (numberId) => {
-    // Extract the qualifier (first letter)
     const qualifier = numberId.charAt(0);
 
-    // Validate the qualifier
     if (!["p", "f", "e", "r"].includes(qualifier)) {
       return Promise.reject(
         new Error("Invalid qualified ID. Must start with p, f, e, or r.")
       );
     }
 
-    // Simulate API delay
     return new Promise((resolve, reject) => {
-      // Random success/failure to simulate network issues (90% success rate)
       const willSucceed = Math.random() < 0.9;
 
       setTimeout(() => {
@@ -63,7 +57,7 @@ function App() {
         } else {
           reject(new Error("Simulated network error"));
         }
-      }, Math.random() * 600); // Random delay up to 600ms to occasionally exceed 500ms timeout
+      }, Math.random() * 600); 
     });
   };
 
@@ -71,14 +65,11 @@ function App() {
     setLoading(true);
     setError("");
 
-    // Extract the qualifier (first letter)
     const qualifier = numberId.charAt(0);
 
-    // Get current window state
     const windowPrevState = [...(numberStore[qualifier] || [])];
 
     try {
-      // Create a timeout promise
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(
           () => reject(new Error("Request timed out after 500ms")),
@@ -86,16 +77,13 @@ function App() {
         );
       });
 
-      // Race between the fetch and the timeout
       const newNumbers = await Promise.race([
         fetchDummyNumbers(numberId),
         timeoutPromise,
       ]);
 
-      // Update window with new unique numbers
       const updatedWindow = updateWindow(qualifier, newNumbers);
 
-      // Create response object
       const responseData = {
         windowPrevState,
         windowCurrState: updatedWindow,
@@ -107,7 +95,6 @@ function App() {
     } catch (err) {
       setError(err.message || "Failed to fetch numbers");
 
-      // Still return current state if error occurs
       setResponse({
         windowPrevState,
         windowCurrState: windowPrevState,
@@ -120,22 +107,17 @@ function App() {
   };
 
   const updateWindow = (qualifier, newNumbers) => {
-    // Start with the current window
     let window = [...numberStore[qualifier]];
 
-    // Add unique new numbers
     for (const num of newNumbers) {
       if (!window.includes(num)) {
-        // Remove oldest number if window is full
         if (window.length >= WINDOW_SIZE) {
           window.shift();
         }
-        // Add new number to the end
         window.push(num);
       }
     }
 
-    // Update the store
     setNumberStore((prev) => ({
       ...prev,
       [qualifier]: window,
